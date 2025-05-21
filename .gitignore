@@ -1,0 +1,8 @@
+*.json
+cmake-build-debug/
+build/
+.cache/
+.idea/
+dependencies/
+GLAD/
+glm/
