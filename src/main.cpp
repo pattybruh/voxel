@@ -145,6 +145,7 @@ int main()
         shader.setMat4("view", view);
 
         // render container
+        /*
         for(int i=-5; i<5; i++) {
             for(int j=-5; j<5; j++) {
                 for(int k=-5; k<5; k++) {
@@ -152,17 +153,24 @@ int main()
                     model = glm::translate(model, glm::vec3(i, j, k));
                     shader.setMat4("model", model);
                     shader.use();
-                    /*
-                    va->bind();
-                    //glBindVertexArray(VAO);
-                    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-                    ib->bind();
-                    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-                    */
+                    
+                    //va->bind();
+                        //glBindVertexArray(VAO);
+                        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+                    //ib->bind();
+                    //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+                   
                     renderer.draw(*va, *ib);
                 }
             }
         }
+        */
+        //drawing a single block
+        model = glm::mat4(1.0f);
+        shader.setMat4("model", model);
+        shader.use();
+        renderer.draw(*va, *ib);
+
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------

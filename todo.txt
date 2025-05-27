@@ -1,0 +1,4 @@
+block class /
+finish chunk class
+    chunk has draw call that takes in renderer
+    this way chunk can call renderer->draw(va,ib) on its own

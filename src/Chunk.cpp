@@ -20,14 +20,29 @@ Chunk::~Chunk() {
 		delete[] m_blocks[i];
 	}
 	delete[] m_blocks;
+    delete m_va;
+    delete m_vb;
+    delete m_ib;
 }
 
-void Chunk::Update() {
+    VertexArray* va = new VertexArray();
+    va->bind();
+    VertexBuffer* vb = new VertexBuffer(cubeVertices, sizeof(cubeVertices));
+    VertexBufferLayout* lay = new VertexBufferLayout();
+    lay->push<float>(3);//pos
+    lay->push<float>(3);//color
+    va->addBuffer(*vb, *lay);
+    IndexBuffer* ib = new IndexBuffer(cubeIndices, 3*12);
+
+    va->unbind();
+    vb->unbind();
+    ib->unbind();
+void Chunk::createMesh() {
+
+}
+void Chunk::update() {
 }
 
-void Chunk::Render() {
+void Chunk::render() {
 }
 
-void Chunk::CreateMesh() {
-
-}
