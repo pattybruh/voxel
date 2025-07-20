@@ -6,3 +6,5 @@ build/
 dependencies/
 GLAD/
 glm/
+runvox.sh
+todo.txt

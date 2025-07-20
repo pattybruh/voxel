@@ -94,7 +94,7 @@ int main()
     VertexBufferLayout* lay = new VertexBufferLayout();
     lay->push<float>(3);//pos
     lay->push<float>(3);//color
-    va->addBuffer(*vb, *lay);
+    va->add_buffer(*vb, *lay);
     IndexBuffer* ib = new IndexBuffer(cubeIndices, 3*12);
 
     va->unbind();
