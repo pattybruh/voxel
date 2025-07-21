@@ -33,7 +33,7 @@ public:
 	~Chunk();
 	void create_mesh();
 	void update();
-	void render();
+	void render() const;
 };
 
 

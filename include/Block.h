@@ -6,10 +6,8 @@
 #define BLOCK_H
 
 enum BlockType{
-	BlockType_Default = 0,
-	BlockType_Grass,
-	BlockType_Dirt,
-	BlockType_Wood,
+	BlockType_Ground = 0,
+    BlockType_Air,
 	BlockType_Water,
 };
 
@@ -18,7 +16,7 @@ enum BlockType{
 class Block{
 private:
     bool m_active;
-	BlockType m_blockType;
+	BlockType m_block_type;
 public:
     static constexpr float CUBE_VERTICIES[] = {
         // positions          // colors           // texture coords
@@ -46,10 +44,11 @@ public:
         1, 5, 2,
         5, 6, 2
     };
+    static constexpr float BLOCK_SIZE = 1.0f;
     Block();
 	~Block();
-	bool isActive() const;
-	void setActive(bool active);
+	bool is_active() const;
+	void set_active(bool active);
 };
 
 #endif //BLOCK_H
