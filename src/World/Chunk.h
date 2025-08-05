@@ -6,9 +6,9 @@
 #define CHUNK_H
 #include "Block.h"
 #include <glm/glm.hpp>
-#include "VertexArray.h"
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
+#include "../Renderer/VertexArray.h"
+#include "../Renderer/VertexBuffer.h"
+#include "../Renderer/IndexBuffer.h"
 #include <memory>
 
 struct Vertex{
