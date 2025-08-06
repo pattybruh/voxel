@@ -3,7 +3,7 @@
 //
 
 #include "ChunkManager.h"
-//#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 ChunkManager::ChunkManager() {
     constexpr int HALF_W = WORLD_SIZE / 2;
@@ -16,19 +16,14 @@ ChunkManager::ChunkManager() {
     }
 }
 
-/*
 void ChunkManager::render(Renderer &renderer, Shader &shader) const {
     for(const auto& [pos, chunk] : m_chunks) {
-        //glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(pos * Chunk::CHUNK_SIZE));
-        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(pos * Chunk::CHUNK_SIZE));
 
         shader.setMat4("model", model);
-        //renderer.draw(chunk->get_va(), chunk->get_ib(), shader);
-        chunk->render();
-        break;
+        renderer.draw(chunk->get_va(), chunk->get_ib(), shader);
     }
 }
-*/
 
 Chunk* ChunkManager::getChunk(const glm::ivec3 &chunkPos) {
 }

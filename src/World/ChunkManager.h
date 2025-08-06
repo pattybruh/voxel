@@ -7,7 +7,7 @@
 
 #include <unordered_map>
 #include "../Renderer/Renderer.h"
-//#include "shader.h"
+#include "shader.h"
 
 #include "Chunk.h"
 
@@ -26,7 +26,7 @@ private:
     static constexpr int WORLD_SIZE = 5;
 public:
     ChunkManager();
-    //void render(Renderer& renderer, Shader& shader) const;
+    void render(Renderer& renderer, Shader& shader) const;
     Chunk* getChunk(const glm::ivec3& chunkPos);
 };
 

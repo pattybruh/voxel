@@ -2,7 +2,6 @@
 //
 #include "Chunk.h"
 
-//#include <iostream>
 
 Chunk::Chunk() {
 	m_blocks = new Block**[CHUNK_SIZE];
@@ -26,7 +25,6 @@ Chunk::~Chunk() {
 }
 
 void Chunk::create_mesh() {
-    //std::cout << "Creating mesh..." << std::endl;
     std::vector<std::array<float, 3>> mesh_vertices;
     std::vector<unsigned int> mesh_indices;
     unsigned int idx = 0;
@@ -173,11 +171,4 @@ void Chunk::create_mesh() {
     m_ib->unbind();
 }
 void Chunk::update() {
-}
-
-void Chunk::render() const {
-    m_va->bind();
-    m_ib->bind();
-
-    glDrawElements(GL_TRIANGLES, m_ib->get_count(), GL_UNSIGNED_INT, 0);
 }

@@ -9,9 +9,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "World/Chunk.h"
 #include "Renderer/Camera.h"
-//#include "Renderer/Renderer.h"
+#include "Renderer/Renderer.h"
 #include "stb_image.h"
-//#include "World/ChunkManager.h"
+#include "World/ChunkManager.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -50,23 +50,14 @@ int main()
 
     //shader program
     Shader shader("shaders/vertex.glsl", "shaders/frag.glsl");
-    glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view;
-
     shader.use();
-    int modelLoc = glGetUniformLocation(shader.ID, "model");
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    int viewLoc = glGetUniformLocation(shader.ID, "view");
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glm::mat4 projection = glm::perspective(glm::radians(65.0f), 16.f/9.0f, 0.1f, 1000.0f);
-    shader.use();
-    shader.setMat4("projection", projection);
+    shader.setMat4("proj", projection);
 
     {
-        //Renderer renderer;
-        //ChunkManager chunkman;
+        Renderer renderer;
+        ChunkManager chunkman;
         Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));
-        Chunk chunk;
 
         double prev_frame_time = glfwGetTime();
         double mouse_x, mouse_y;
@@ -85,15 +76,10 @@ int main()
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            view = camera.get_view_matrix();
-            shader.setMat4("view", view);
+            shader.setMat4("view", camera.get_view_matrix());
 
-            //drawing a single chunk
-            //chunkman.render(renderer, shader);
-            model = glm::mat4(1.0f);
-            shader.setMat4("model", model);
-            shader.use();
-            chunk.render();
+            //draw 5x5 world
+            chunkman.render(renderer, shader);
 
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
