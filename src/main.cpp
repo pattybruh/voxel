@@ -9,14 +9,16 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "World/Chunk.h"
 #include "Renderer/Camera.h"
+//#include "Renderer/Renderer.h"
 #include "stb_image.h"
+//#include "World/ChunkManager.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
 // settings
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 int main()
 {
@@ -48,22 +50,24 @@ int main()
 
     //shader program
     Shader shader("shaders/vertex.glsl", "shaders/frag.glsl");
-
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view;
-    glm::mat4 projection = glm::perspective(glm::radians(65.0f), 16.f/9.0f, 0.1f, 1000.0f);
 
     shader.use();
     int modelLoc = glGetUniformLocation(shader.ID, "model");
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     int viewLoc = glGetUniformLocation(shader.ID, "view");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    int projLoc = glGetUniformLocation(shader.ID, "proj");
-    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glm::mat4 projection = glm::perspective(glm::radians(65.0f), 16.f/9.0f, 0.1f, 1000.0f);
+    shader.use();
+    shader.setMat4("projection", projection);
 
     {
-        Chunk chunk;
+        //Renderer renderer;
+        //ChunkManager chunkman;
         Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));
+        Chunk chunk;
+
         double prev_frame_time = glfwGetTime();
         double mouse_x, mouse_y;
         while (!glfwWindowShouldClose(window))
@@ -85,6 +89,7 @@ int main()
             shader.setMat4("view", view);
 
             //drawing a single chunk
+            //chunkman.render(renderer, shader);
             model = glm::mat4(1.0f);
             shader.setMat4("model", model);
             shader.use();

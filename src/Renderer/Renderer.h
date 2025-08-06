@@ -12,7 +12,7 @@ class Renderer{
 public:
     Renderer();
     ~Renderer();
-    void draw(const VertexArray& va, const IndexBuffer& ib) const;
+    //void draw(const VertexArray& va, const IndexBuffer& ib, Shader& shader) const;
 };
 
 #endif //RENDERER_H

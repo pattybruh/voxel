@@ -25,7 +25,9 @@ add_subdirectory(dependencies)
 # Add GLAD source directly
 set(GLAD_SRC GLAD/src/glad.c
         src/Renderer/Camera.cpp
-        src/Renderer/Camera.h)
+        src/Renderer/Camera.h
+        src/World/ChunkManager.cpp
+        src/World/ChunkManager.h)
 
 # Find OpenGL
 find_package(OpenGL REQUIRED)

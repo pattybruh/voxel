@@ -2,6 +2,8 @@
 //
 #include "Chunk.h"
 
+//#include <iostream>
+
 Chunk::Chunk() {
 	m_blocks = new Block**[CHUNK_SIZE];
 	for(int i=0; i<CHUNK_SIZE; i++) {
@@ -24,6 +26,7 @@ Chunk::~Chunk() {
 }
 
 void Chunk::create_mesh() {
+    //std::cout << "Creating mesh..." << std::endl;
     std::vector<std::array<float, 3>> mesh_vertices;
     std::vector<unsigned int> mesh_indices;
     unsigned int idx = 0;

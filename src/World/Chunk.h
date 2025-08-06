@@ -33,7 +33,9 @@ public:
 	~Chunk();
 	void create_mesh();
 	void update();
-	void render() const;
+    void render() const;
+    const VertexArray& get_va() const {return *m_va;}
+    const IndexBuffer& get_ib() const {return *m_ib;}
 };
 
 
