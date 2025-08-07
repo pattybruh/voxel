@@ -10,7 +10,7 @@ Camera::Camera(glm::vec3 pos) :
     m_up(glm::vec3(0.0f, 1.0f, 0.0f)),
     m_pitch(0.0f),
     m_yaw(-90.0f),
-    m_speed(10.0f),
+    m_speed(30.0f),
     m_sens(0.1f)
 {
 }

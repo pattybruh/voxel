@@ -11,6 +11,8 @@
 #include "../Renderer/IndexBuffer.h"
 #include <memory>
 
+#include "NoiseGenerator.h"
+
 struct Vertex{
     glm::vec3 pos;
     glm::vec3 norm;
@@ -24,17 +26,23 @@ private:
     std::unique_ptr<IndexBuffer> m_ib;
     std::unique_ptr<VertexBufferLayout> m_lay;
 	Block ***m_blocks;
+    bool m_dirty = false;
     //mesh data
     std::vector<Vertex> m_vertices;
     std::vector<unsigned int> m_indices;
 public:
-	static const int CHUNK_SIZE = 16;
+	static constexpr int CHUNK_SIZE = 16;
+    static constexpr int MAX_HEIGHT = 32;
 	Chunk();
+    Chunk(const glm::ivec3& chunk_pos, NoiseGenerator& noisegen);
 	~Chunk();
 	void create_mesh();
 	void update();
     const VertexArray& get_va() const {return *m_va;}
     const IndexBuffer& get_ib() const {return *m_ib;}
+
+    void mark_dirty() {m_dirty = true;}
+    void clear_dirty() {m_dirty = false;}
 };
 
 

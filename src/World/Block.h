@@ -45,8 +45,8 @@ public:
         5, 6, 2
     };
     static constexpr float BLOCK_SIZE = 1.0f;
-    Block();
-	~Block();
+    explicit Block(bool act=true);
+    ~Block();
 	bool is_active() const;
 	void set_active(bool active);
 };

@@ -27,7 +27,9 @@ set(GLAD_SRC GLAD/src/glad.c
         src/Renderer/Camera.cpp
         src/Renderer/Camera.h
         src/World/ChunkManager.cpp
-        src/World/ChunkManager.h)
+        src/World/ChunkManager.h
+        src/World/NoiseGenerator.cpp
+        src/World/NoiseGenerator.h)
 
 # Find OpenGL
 find_package(OpenGL REQUIRED)

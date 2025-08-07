@@ -4,9 +4,7 @@
 
 #include "Block.h"
 
-Block::
-
-Block::Block() : m_active(true), m_block_type(BlockType_Ground){
+Block::Block(bool act) : m_active(act), m_block_type(BlockType_Ground){
 }
 
 Block::~Block() {

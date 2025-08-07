@@ -5,12 +5,12 @@
 #include "ChunkManager.h"
 #include <glm/gtc/matrix_transform.hpp>
 
-ChunkManager::ChunkManager() {
-    constexpr int HALF_W = WORLD_SIZE / 2;
-    for(int i = -HALF_W; i < HALF_W; i++) {
-        for(int j = -HALF_W; j < HALF_W; j++) {
-            for(int k = -HALF_W; k < HALF_W; k++) {
-                m_chunks.emplace(glm::ivec3{i,j,k}, std::make_unique<Chunk>());
+ChunkManager::ChunkManager() : m_noisegen(3.0f, 0.01f){
+    constexpr int world_d = WORLD_DEPTH/2;
+    for(int x = -WORLD_RADIUS; x < WORLD_RADIUS; x++) {
+        for(int y = -WORLD_DEPTH; y < WORLD_DEPTH+2; y++) {
+            for(int z = -WORLD_RADIUS; z < WORLD_RADIUS; z++) {
+                m_chunks.emplace(glm::ivec3{x,y,z}, std::make_unique<Chunk>(glm::ivec3{x,y,z}, m_noisegen));
             }
         }
     }
