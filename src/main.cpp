@@ -79,6 +79,7 @@ int main()
             shader.setMat4("view", camera.get_view_matrix());
 
             //draw 5x5 world
+            chunkman.update_dirty_chunks();
             chunkman.render(renderer, shader);
 
 

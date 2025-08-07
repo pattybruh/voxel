@@ -11,7 +11,11 @@ Chunk::Chunk() {
 			m_blocks[i][j] = new Block[CHUNK_SIZE];
 		}
 	}
-    create_mesh();
+    m_va = std::make_unique<VertexArray>();
+    m_lay = std::make_unique<VertexBufferLayout>();
+    m_lay->push<float>(3);//pos
+    m_lay->push<float>(3);//color
+    update_mesh();
 }
 
 Chunk::Chunk(const glm::ivec3 &chunk_pos, NoiseGenerator &noisegen) {
@@ -30,7 +34,11 @@ Chunk::Chunk(const glm::ivec3 &chunk_pos, NoiseGenerator &noisegen) {
             }
         }
     }
-    create_mesh();
+    m_va = std::make_unique<VertexArray>();
+    m_lay = std::make_unique<VertexBufferLayout>();
+    m_lay->push<float>(3);//pos
+    m_lay->push<float>(3);//color
+    update_mesh();
 }
 
 Chunk::~Chunk() {
@@ -43,7 +51,7 @@ Chunk::~Chunk() {
 	delete[] m_blocks;
 }
 
-void Chunk::create_mesh() {
+void Chunk::update_mesh() {
     std::vector<std::array<float, 3>> mesh_vertices;
     std::vector<unsigned int> mesh_indices;
     unsigned int idx = 0;
@@ -176,18 +184,12 @@ void Chunk::create_mesh() {
         }
     }
 
-    m_va = std::make_unique<VertexArray>();
     m_va->bind();
     m_vb = std::make_unique<VertexBuffer>(mesh_vertices.data(), 3*sizeof(float)*mesh_vertices.size());
-    m_lay = std::make_unique<VertexBufferLayout>();
-    m_lay->push<float>(3);//pos
-    m_lay->push<float>(3);//color
     m_va->add_buffer(*m_vb, *m_lay);
     m_ib = std::make_unique<IndexBuffer>(mesh_indices.data(), mesh_indices.size());
 
     m_va->unbind();
     m_vb->unbind();
     m_ib->unbind();
-}
-void Chunk::update() {
 }

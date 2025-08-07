@@ -6,6 +6,7 @@
 #define CHUNKMANAGER_H
 
 #include <unordered_map>
+#include <unordered_set>
 #include "../Renderer/Renderer.h"
 #include "NoiseGenerator.h"
 #include "shader.h"
@@ -27,9 +28,13 @@ private:
     static constexpr int WORLD_DEPTH = 1;
     NoiseGenerator m_noisegen;
     std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>, GLMVec3Hash> m_chunks;
+    std::unordered_set<Chunk*> m_dirty_chunks;
+
 public:
     ChunkManager();
+    void update_dirty_chunks();
     void render(Renderer& renderer, Shader& shader) const;
+    void mark_dirty_chunk(Chunk* dchunk);
     Chunk* getChunk(const glm::ivec3& chunkPos);
 };
 
