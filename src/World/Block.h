@@ -5,10 +5,10 @@
 #ifndef BLOCK_H
 #define BLOCK_H
 
-enum BlockType{
-	BlockType_Ground = 0,
-    BlockType_Air,
-	BlockType_Water,
+enum class BlockType : int {
+	Ground = 0,
+    Air,
+	Water,
 };
 
 //keep blocks simple, less overhead
@@ -49,6 +49,14 @@ public:
     ~Block();
 	bool is_active() const;
 	void set_active(bool active);
+
+    void set_type(BlockType type) {
+        m_block_type = type;
+        if(type == BlockType::Air) {
+            m_active = false;
+        }
+    }
+    BlockType get_type() const {return m_block_type;}
 };
 
 #endif //BLOCK_H

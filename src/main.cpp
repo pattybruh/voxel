@@ -11,6 +11,7 @@
 #include "Renderer/Camera.h"
 #include "Renderer/Renderer.h"
 #include "stb_image.h"
+#include "Physics/Physics.h"
 #include "World/ChunkManager.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -57,6 +58,7 @@ int main()
     {
         Renderer renderer;
         ChunkManager chunkman;
+        Physics physics;
         Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));
 
         double prev_frame_time = glfwGetTime();
@@ -78,7 +80,6 @@ int main()
 
             shader.setMat4("view", camera.get_view_matrix());
 
-            //draw 5x5 world
             chunkman.update_dirty_chunks();
             chunkman.render(renderer, shader);
 

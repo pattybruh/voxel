@@ -193,3 +193,7 @@ void Chunk::update_mesh() {
     m_vb->unbind();
     m_ib->unbind();
 }
+
+void Chunk::set_block(const glm::ivec3 &block_coord, BlockType type) {
+    m_blocks[block_coord.x][block_coord.z][block_coord.y].set_type(type);
+}

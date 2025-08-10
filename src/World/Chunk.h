@@ -43,6 +43,10 @@ public:
     void mark_dirty() {m_dirty = true;}
     void clear_dirty() {m_dirty = false;}
     bool is_dirty() const {return m_dirty;}
+    void set_block(const glm::ivec3& block_coord, BlockType type);
+    Block& get_block(const glm::ivec3& block_coord) const {
+        return m_blocks[block_coord.x][block_coord.z][block_coord.y];
+    }
 };
 
 

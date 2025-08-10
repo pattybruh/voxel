@@ -35,7 +35,15 @@ public:
     void update_dirty_chunks();
     void render(Renderer& renderer, Shader& shader) const;
     void mark_dirty_chunk(Chunk* dchunk);
-    Chunk* getChunk(const glm::ivec3& chunkPos);
+    void set_block(const glm::ivec3& world_coord, BlockType type);
+
+    Chunk* get_chunk(const glm::ivec3& c_pos);
+    const Chunk* get_chunk(const glm::ivec3& c_pos) const;
+
+    Chunk* get_chunk_containing(const glm::ivec3& w_pos);
+    const Chunk* get_chunk_containing(const glm::ivec3& w_pos) const;
+
+    bool is_solid_w(const glm::ivec3& w_pos);
 };
 
 
