@@ -27,6 +27,9 @@ public:
     Camera(glm::vec3 pos);
 
     void update(GLFWwindow* window, float delta_t, double mouse_x, double mouse_y);
+    void set_position(const glm::vec3 &pos);
+    glm::vec3 get_front() const {return m_front;}
+    glm::vec3 get_right() const {return glm::normalize(glm::cross(m_front, m_up));}
     glm::mat4 get_view_matrix() const;
 };
 

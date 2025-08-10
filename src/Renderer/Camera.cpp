@@ -16,6 +16,7 @@ Camera::Camera(glm::vec3 pos) :
 }
 
 void Camera::update(GLFWwindow *window, float delta_t, double mouse_x, double mouse_y) {
+    /*
     float velocity = m_speed * delta_t;
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         m_position += m_front * velocity;
@@ -29,7 +30,7 @@ void Camera::update(GLFWwindow *window, float delta_t, double mouse_x, double mo
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         m_position += glm::normalize(glm::cross(m_front, m_up))*velocity;
     }
-
+    */
     glm::vec3 direction;
     direction.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     direction.y = sin(glm::radians(m_pitch));
@@ -39,14 +40,12 @@ void Camera::update(GLFWwindow *window, float delta_t, double mouse_x, double mo
     m_last_x = mouse_x;
     m_last_y = mouse_y;
     m_yaw += xoffset;
-    m_pitch += yoffset;
-    if(m_pitch > 89.0f) {
-        m_pitch = 89.0f;
-    }
-    if(m_pitch < -89.0f) {
-        m_pitch = -89.0f;
-    }
+    m_pitch = glm::clamp(m_pitch + yoffset, -89.0f, 89.0f);
     m_front = glm::normalize(direction);
+}
+
+void Camera::set_position(const glm::vec3 &pos) {
+    m_position = pos;
 }
 
 glm::mat4 Camera::get_view_matrix() const {

@@ -59,20 +59,43 @@ int main()
         Renderer renderer;
         ChunkManager chunkman;
         Physics physics;
+        PBody player = {1, {0,36,0}, {0,0,0}, {0.3,0.9,0.3} };
+
         Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));
 
         double prev_frame_time = glfwGetTime();
         double mouse_x, mouse_y;
+        glfwGetCursorPos(window, &mouse_x, &mouse_y);
+
+        double acc = 0.0;
+        constexpr double DT = 1.0/60.0;
+        constexpr float PHEIGHT = 1.75f;
+        constexpr float PLAYERMS = 5.0f;
         while (!glfwWindowShouldClose(window))
         {
             double curr_frame_time = glfwGetTime();
+            if ((int)(curr_frame_time*10) % 10 == 0) {
+                std::cout << "pos{" << player.position.x << ", " << player.position.y
+                          << ", " << player.position.z << "} onGround=" << player.is_grounded<< "\n";
+            }
+
             double delta_time = curr_frame_time - prev_frame_time;
+            delta_time = std::min(delta_time, 0.25);
             prev_frame_time = curr_frame_time;
+            acc += delta_time;
             glfwGetCursorPos(window, &mouse_x, &mouse_y);
             camera.update(window, delta_time, mouse_x, mouse_y);
 
             // input
+            move_player_horizontal(window, camera, player, PLAYERMS);
+            try_jump(window, player);
             processInput(window);
+
+            while(acc >= DT) {
+                physics.step(chunkman, player, DT);
+                acc -= DT;
+            }
+            camera.set_position(player.position+glm::vec3{0, PHEIGHT, 0});
 
             // render
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
