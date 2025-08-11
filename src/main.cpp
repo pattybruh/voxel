@@ -59,7 +59,7 @@ int main()
         Renderer renderer;
         ChunkManager chunkman;
         Physics physics;
-        PBody player = {1, {0,36,0}, {0,0,0}, {0.3,0.9,0.3} };
+        PBody player = {1, {0.5,36, 0.5}, {0,0,0}, {0.3,0.9,0.3}};
 
         Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));
 
@@ -70,15 +70,18 @@ int main()
         double acc = 0.0;
         constexpr double DT = 1.0/60.0;
         constexpr float PHEIGHT = 1.75f;
-        constexpr float PLAYERMS = 5.0f;
+        constexpr float PLAYERMS = 8.0f;
         while (!glfwWindowShouldClose(window))
         {
             double curr_frame_time = glfwGetTime();
+            /*
             if ((int)(curr_frame_time*10) % 10 == 0) {
                 std::cout << "pos{" << player.position.x << ", " << player.position.y
                           << ", " << player.position.z << "} onGround=" << player.is_grounded<< "\n";
+                std::cout << "vel{" << player.velocity.x << ", " << player.velocity.y
+                          << ", " << player.velocity.z << "}\n";
             }
-
+            */
             double delta_time = curr_frame_time - prev_frame_time;
             delta_time = std::min(delta_time, 0.25);
             prev_frame_time = curr_frame_time;

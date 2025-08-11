@@ -29,14 +29,11 @@ inline glm::vec3 safe_normalize(const glm::vec3& v) {
 }
 inline void move_player_horizontal(GLFWwindow* window, const Camera& cam, PBody& body, float ms) {
     glm::vec3 fwd = {cam.get_front().x, 0.0f, cam.get_front().z};
-    fwd = safe_normalize(fwd);
+    auto len2 = glm::dot(fwd, fwd);
+    if (len2 > 1e-12f) fwd /= std::sqrt(len2); else fwd = {0,0,1};
+    //fwd = safe_normalize(fwd);
     glm::vec3 right = {-fwd.z, 0.0f, fwd.x};
-    if (fwd == glm::vec3(0) && right == glm::vec3(0)) {
-        fwd = {0.0f, 0.0f, 1.0f};
-        right = {-1.0f, 0.0f, 0.0f};
-    }
     glm::vec3 direction(0);
-
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         direction += fwd;
     }
@@ -49,9 +46,11 @@ inline void move_player_horizontal(GLFWwindow* window, const Camera& cam, PBody&
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         direction += right;
     }
-    if (glm::dot(direction, direction) > 0.0f) direction = safe_normalize(direction);
-    body.velocity.x += direction.x;
-    body.velocity.z += direction.z;
+    if (glm::dot(direction, direction) > 0.0f) {
+        direction = safe_normalize(direction);
+        body.velocity.x = glm::clamp(body.velocity.x+direction.x, -ms, ms);
+        body.velocity.z = glm::clamp(body.velocity.z+direction.z, -ms, ms);
+    }
 }
 inline void try_jump(GLFWwindow* window, PBody& body, float jumpSpeed=5.5f) {
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && body.is_grounded) {

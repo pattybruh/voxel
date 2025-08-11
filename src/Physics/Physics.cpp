@@ -18,7 +18,7 @@ bool Physics::sweep(ChunkManager &chunkman, PBody &body, float target, int axis)
     }
 
     float low = start, high = target;
-    for(int i=0; i<10; i++) {
+    for(int i=0; i<12; i++) {
         float mid = 0.5f*(low+high);
         testpos = body.position;
         (&testpos.x)[axis] = mid;
@@ -31,7 +31,7 @@ bool Physics::sweep(ChunkManager &chunkman, PBody &body, float target, int axis)
     }
     (&body.position.x)[axis] = low;
     (&body.velocity.x)[axis] = 0.0f;
-    return (axis == 1) && (ds <= EPSILON);
+    return (axis == 1) && (ds < 0.0f);
 }
 
 bool Physics::aabb_overlap(ChunkManager &chunkman, const glm::vec3 &pos, const glm::vec3 &half_ext) {
@@ -40,13 +40,14 @@ bool Physics::aabb_overlap(ChunkManager &chunkman, const glm::vec3 &pos, const g
     glm::vec3 vmin = (pos-glm::vec3(half_ext.x, 0.0f, half_ext.z))-glm::vec3(padding);
     glm::vec3 vmax = (pos+half_ext)+glm::vec3(padding);
 
-    int xm = static_cast<int>(std::floor(vmax.x));
-    int ym = static_cast<int>(std::floor(vmax.y));
-    int zm = static_cast<int>(std::floor(vmax.z));
-    for(int x=static_cast<int>(std::floor(vmin.x)); x<xm; x++) {
-        for(int y=static_cast<int>(std::floor(vmin.y)); y<ym; y++) {
-            for(int z=static_cast<int>(std::floor(vmin.z)); z<zm; z++) {
-                if(chunkman.is_solid_w(glm::vec3{x,y,z})) return true;
+    int xm = static_cast<int>(std::floor(vmax.x-padding));
+    int ym = static_cast<int>(std::floor(vmax.y-padding));
+    int zm = static_cast<int>(std::floor(vmax.z-padding));
+
+    for(int x=static_cast<int>(std::floor(vmin.x)); x<=xm; x++) {
+        for(int y=static_cast<int>(std::floor(vmin.y)); y<=ym; y++) {
+            for(int z=static_cast<int>(std::floor(vmin.z)); z<=zm; z++) {
+                if(chunkman.is_solid_w(glm::ivec3{x,y,z})) return true;
             }
         }
     }
@@ -61,7 +62,12 @@ void Physics::step(ChunkManager &chunkman, PBody &body, float delta) {
 
     body.velocity.y -= GRAVITY * delta;
     glm::vec3 toward = body.position + (body.velocity*delta);
+
     sweep(chunkman, body, toward.x, 0);
     body.is_grounded = sweep(chunkman, body, toward.y, 1);
     sweep(chunkman, body, toward.z, 2);
+    if(body.is_grounded){
+        body.velocity.x *= 0.8;
+        body.velocity.z *= 0.8;
+    }
 }
