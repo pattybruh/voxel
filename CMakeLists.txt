@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.7)
 project(Voxel)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #============================================================================
 # Set directories
@@ -22,25 +23,38 @@ include_directories(glm/include)
 add_subdirectory(dependencies)
 
 # Add GLAD source directly
-set(GLAD_SRC GLAD/src/glad.c)
+set(GLAD_SRC GLAD/src/glad.c
+        src/Renderer/Camera.cpp
+        src/Renderer/Camera.h
+        src/World/ChunkManager.cpp
+        src/World/ChunkManager.h
+        src/World/NoiseGenerator.cpp
+        src/World/NoiseGenerator.h
+        src/Physics/Physics.cpp
+        src/Physics/Physics.h)
 
 # Find OpenGL
+# Prefer modern GLVND over legacy libGL
+if (POLICY CMP0072)
+    cmake_policy(SET CMP0072 NEW)
+endif()
+set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 
 # Create executable
 add_executable(Voxel ${SOURCE_FILES} ${GLAD_SRC}
-        include/Chunk.h
-        src/Chunk.cpp
-        include/Renderer.h
-        src/Renderer.cpp
-        include/VertexBuffer.h
-        src/VertexBuffer.cpp
-        src/IndexBuffer.cpp
-        include/IndexBuffer.h
-        include/VertexArray.h
-        src/VertexArray.cpp
-        include/VertexBufferLayout.h
-        src/VertexBufferLayout.cpp)
+        src/World/Chunk.h
+        src/World/Chunk.cpp
+        src/Renderer/Renderer.h
+        src/Renderer/Renderer.cpp
+        src/Renderer/VertexBuffer.h
+        src/Renderer/VertexBuffer.cpp
+        src/Renderer/IndexBuffer.cpp
+        src/Renderer/IndexBuffer.h
+        src/Renderer/VertexArray.h
+        src/Renderer/VertexArray.cpp
+        src/Renderer/VertexBufferLayout.h
+        src/Renderer/VertexBufferLayout.cpp)
 
 # Link necessary libraries
 target_link_libraries(Voxel

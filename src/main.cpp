@@ -7,27 +7,19 @@
 #include <iostream>
 #include "shader.h"
 #define STB_IMAGE_IMPLEMENTATION
+#include "World/Chunk.h"
+#include "Renderer/Camera.h"
+#include "Renderer/Renderer.h"
 #include "stb_image.h"
-
-#include "Renderer.h"
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
-#include "VertexArray.h"
+#include "Physics/Physics.h"
+#include "World/ChunkManager.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
 // settings
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
-
-//camera
-glm::vec3 camEye = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 camTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 camDir = glm::normalize(camEye-camTarget);
-glm::vec3 camFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 camRight = glm::cross(camDir, camUp);
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 int main()
 {
@@ -36,7 +28,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment to fix compilation on OS X
 
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "voxel", NULL, NULL);
     if (window == NULL)
@@ -55,139 +47,78 @@ int main()
         return -1;
     }
     glEnable(GL_DEPTH_TEST);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     //shader program
     Shader shader("shaders/vertex.glsl", "shaders/frag.glsl");
-
-    //vertex
-    float cubeVertices[] = {
-        // positions          // colors           // texture coords
-        0.5f,  0.5f, 0.5f,   1.0f, 0.0f, 0.0f,   // top right
-        0.5f, -0.5f, 0.5f,   0.0f, 0.0f, 1.0f,   // bottom right
-        -0.5f, -0.5f, 0.5f,   0.0f, 0.0f, 1.0f,   // bottom left
-        -0.5f,  0.5f, 0.5f,   1.0f, 0.0f, 0.0f,   // top left
-
-        0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   //back side
-        0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f
-    };
-    unsigned int cubeIndices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3,  // second triangle
-        3, 2, 7,
-        2, 6, 7,
-        7, 6, 4,
-        6, 5, 4,
-        4, 5, 0,
-        5, 1, 0,
-        0, 3, 4,
-        3, 7, 4,
-        1, 5, 2,
-        5, 6, 2
-    };
-    unsigned int VBO, VAO, EBO;
-
-    VertexArray* va = new VertexArray();
-    va->bind();
-    VertexBuffer* vb = new VertexBuffer(cubeVertices, sizeof(cubeVertices));
-    VertexBufferLayout* lay = new VertexBufferLayout();
-    lay->push<float>(3);//pos
-    lay->push<float>(3);//color
-    va->addBuffer(*vb, *lay);
-    IndexBuffer* ib = new IndexBuffer(cubeIndices, 3*12);
-
-    va->unbind();
-    vb->unbind();
-    ib->unbind();
-    /*
-    //position attribute
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    //color attribute
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    */
-
-    glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view = glm::mat4(1.0f);
-    //view = glm::lookAt(camEye, camTarget, camUp);
-    view = glm::lookAt(camEye, camEye+camFront, camUp);
-    glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::perspective(glm::radians(65.0f), 16.f/9.0f, 0.1f, 1000.0f);
-
     shader.use();
-    int modelLoc = glGetUniformLocation(shader.ID, "model");
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    int viewLoc = glGetUniformLocation(shader.ID, "view");
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    int projLoc = glGetUniformLocation(shader.ID, "proj");
-    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glm::mat4 projection = glm::perspective(glm::radians(65.0f), 16.f/9.0f, 0.1f, 1000.0f);
+    shader.setMat4("proj", projection);
 
-    const float radius = 15.0f;
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    Renderer renderer;
-    while (!glfwWindowShouldClose(window))
     {
-        // input
-        processInput(window);
+        Renderer renderer;
+        ChunkManager chunkman;
+        Physics physics;
+        PBody player = {1, {0.5,36, 0.5}, {0,0,0}, {0.3,0.9,0.3}};
 
-        // render
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));
 
-        float camX = sin(glfwGetTime()*0.5)*radius;
-        float camZ = cos(glfwGetTime()*0.5)*radius;
-        //view = glm::lookAt(camEye, camEye+camFront, camUp);
-        view = glm::lookAt(glm::vec3(camX, 10.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        shader.setMat4("view", view);
+        double prev_frame_time = glfwGetTime();
+        double mouse_x, mouse_y;
+        glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
-        // render container
-        /*
-        for(int i=-5; i<5; i++) {
-            for(int j=-5; j<5; j++) {
-                for(int k=-5; k<5; k++) {
-                    model = glm::mat4(1.0f);
-                    model = glm::translate(model, glm::vec3(i, j, k));
-                    shader.setMat4("model", model);
-                    shader.use();
-                    
-                    //va->bind();
-                        //glBindVertexArray(VAO);
-                        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-                    //ib->bind();
-                    //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-                   
-                    renderer.draw(*va, *ib);
-                }
+        double acc = 0.0;
+        constexpr double DT = 1.0/60.0;
+        constexpr float PHEIGHT = 1.75f;
+        constexpr float PLAYERMS = 8.0f;
+        while (!glfwWindowShouldClose(window))
+        {
+            double curr_frame_time = glfwGetTime();
+            /*
+            if ((int)(curr_frame_time*10) % 10 == 0) {
+                std::cout << "pos{" << player.position.x << ", " << player.position.y
+                          << ", " << player.position.z << "} onGround=" << player.is_grounded<< "\n";
+                std::cout << "vel{" << player.velocity.x << ", " << player.velocity.y
+                          << ", " << player.velocity.z << "}\n";
             }
+            */
+            double delta_time = curr_frame_time - prev_frame_time;
+            delta_time = std::min(delta_time, 0.25);
+            prev_frame_time = curr_frame_time;
+            acc += delta_time;
+            glfwGetCursorPos(window, &mouse_x, &mouse_y);
+            camera.update(window, delta_time, mouse_x, mouse_y);
+
+            // input
+            move_player_horizontal(window, camera, player, PLAYERMS);
+            try_jump(window, player);
+            processInput(window);
+
+            while(acc >= DT) {
+                physics.step(chunkman, player, DT);
+                acc -= DT;
+            }
+            camera.set_position(player.position+glm::vec3{0, PHEIGHT, 0});
+
+            // render
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            shader.setMat4("view", camera.get_view_matrix());
+
+            chunkman.update_dirty_chunks();
+            chunkman.render(renderer, shader);
+
+
+            // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+            // -------------------------------------------------------------------------------
+            glfwSwapBuffers(window);
+            glfwPollEvents();
         }
-        */
-        //drawing a single block
-        model = glm::mat4(1.0f);
-        shader.setMat4("model", model);
-        shader.use();
-        renderer.draw(*va, *ib);
-
-
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
-        glfwPollEvents();
     }
-
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
-    delete vb;
-    delete ib;
     glfwTerminate();
     return 0;
 }

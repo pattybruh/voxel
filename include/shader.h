@@ -2,6 +2,8 @@
 #define SHADER_H
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <string>
 #include <fstream>
@@ -93,7 +95,12 @@ public:
         glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
     }
     void setMat4(const std::string& name, const glm::mat4& matrix) const {
-        glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
+        GLint location = glGetUniformLocation(ID, name.c_str());
+        if (location == -1) {
+            std::cerr << "WARNING: uniform '" << name << "' not found or not used in shader.\n";
+        }
+        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+        //glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
     }
 
 private:

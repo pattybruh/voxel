@@ -13,7 +13,7 @@ public:
 
     void bind() const;
     void unbind() const;
-    void addBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout);
+    void add_buffer(const VertexBuffer& vb, const VertexBufferLayout& layout);
 };
 
 #endif //VERTEXARRAY_H

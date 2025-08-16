@@ -33,10 +33,10 @@ public:
         static_assert(sizeof(T)==0, "invalid type for VertexBufferLayout::push<T>()");
     }
 
-    inline unsigned int getStride() const{
+    inline unsigned int get_stride() const{
         return m_stride;
     }
-    inline const std::vector<VertexBufferElement>& getElements() const{
+    inline const std::vector<VertexBufferElement>& get_elements() const{
         return m_elements;
     }
 };
