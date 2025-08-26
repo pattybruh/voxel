@@ -57,8 +57,41 @@ bool Physics::aabb_overlap(ChunkManager &chunkman, const glm::vec3 &pos, const g
 Physics::Physics() {
 }
 
+void Physics::apply_drag(PBody &body, float dt) {
+    glm::vec2 v = {body.velocity.x, body.velocity.z};
+    if(body.has_intent) {
+        glm::vec2 u = safe_normalize(body.intent);
+        float s_parv = glm::dot(v, u);
+        glm::vec2 parv = s_parv*u;
+        glm::vec2 latv = v-parv;
+        if(body.is_grounded) {
+            float target = 5.0f;
+            float dv     = target-s_parv;
+            float step   = 30.0f * dt;//TODO: pass in thru PBody or Physics.h constexpr
+            float s_parv_new = (std::abs(dv) <= step) ? target : (s_parv + step*((dv > 0) ? 1.f : -1.f));
+
+            v = (s_parv_new*u) + (latv*std::max(0.f, 1.f-(FRICTION_GROUND*dt)));
+        }
+        else {
+
+        }
+    }
+    else {
+        float scale = std::max(0.0f, 1.0f-(FRICTION_GROUND*dt));
+        v *= scale;
+        if(glm::length(v) < EPSILON) {
+            v = glm::vec2(0);
+        }
+    }
+    body.velocity.x = v.x;
+    body.velocity.z = v.y;
+}
+
+
 void Physics::step(ChunkManager &chunkman, PBody &body, float delta) {
     if(body.type != BodyType::Dynamic) return;
+
+    apply_drag(body, delta);
 
     body.velocity.y -= GRAVITY * delta;
     glm::vec3 toward = body.position + (body.velocity*delta);
@@ -66,8 +99,9 @@ void Physics::step(ChunkManager &chunkman, PBody &body, float delta) {
     sweep(chunkman, body, toward.x, 0);
     body.is_grounded = sweep(chunkman, body, toward.y, 1);
     sweep(chunkman, body, toward.z, 2);
-    if(body.is_grounded){
-        body.velocity.x *= 0.8;
-        body.velocity.z *= 0.8;
+    //TODO: frction only if on ground with no intent to move
+    if(body.is_grounded && !body.has_intent){
+        body.velocity.x *= 0.85;
+        body.velocity.z *= 0.85;
     }
 }

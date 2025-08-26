@@ -70,7 +70,7 @@ int main()
         double acc = 0.0;
         constexpr double DT = 1.0/60.0;
         constexpr float PHEIGHT = 1.75f;
-        constexpr float PLAYERMS = 8.0f;
+        constexpr float PLAYERMS = 5.0f;
         while (!glfwWindowShouldClose(window))
         {
             double curr_frame_time = glfwGetTime();
