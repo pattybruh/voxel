@@ -13,6 +13,7 @@
 #include "stb_image.h"
 #include "Physics/Physics.h"
 #include "World/ChunkManager.h"
+#include "Input/Controls.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);

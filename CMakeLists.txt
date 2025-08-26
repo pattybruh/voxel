@@ -31,7 +31,12 @@ set(GLAD_SRC GLAD/src/glad.c
         src/World/NoiseGenerator.cpp
         src/World/NoiseGenerator.h
         src/Physics/Physics.cpp
-        src/Physics/Physics.h)
+        src/Physics/Physics.h
+        src/Physics/EntityManager.cpp
+        src/Physics/EntityManager.h
+        src/Physics/Entity_Types.h
+        src/Input/Controls.h
+        src/Utils/MathUtil.h)
 
 # Find OpenGL
 # Prefer modern GLVND over legacy libGL
