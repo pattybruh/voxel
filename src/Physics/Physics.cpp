@@ -102,8 +102,10 @@ void Physics::step(ChunkManager &chunkman, PBody &body, float delta) {
     body.is_grounded = sweep(chunkman, body, toward.y, 1);
     sweep(chunkman, body, toward.z, 2);
     //TODO: frction only if on ground with no intent to move
+    /*
     if(body.is_grounded && !body.has_intent){
         body.velocity.x *= 0.85;
         body.velocity.z *= 0.85;
     }
+    */
 }

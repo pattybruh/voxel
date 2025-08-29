@@ -4,16 +4,7 @@
 
 #include "ChunkManager.h"
 #include <glm/gtc/matrix_transform.hpp>
-
-inline int floor_div(int a, int b) {
-    int q = a / b, r = a % b;
-    if (r && ((r > 0) != (b > 0))) --q;
-    return q;
-}
-inline int floor_mod(int a, int b) {
-    int m = a - floor_div(a, b) * b;
-    return m;
-}
+#include "../Utils/MathUtil.h"
 
 ChunkManager::ChunkManager() : m_noisegen(6.0f, 0.01f){
     for(int x = -WORLD_RADIUS; x < WORLD_RADIUS; x++) {

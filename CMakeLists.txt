@@ -36,7 +36,11 @@ set(GLAD_SRC GLAD/src/glad.c
         src/Physics/EntityManager.h
         src/Physics/Entity_Types.h
         src/Input/Controls.h
-        src/Utils/MathUtil.h)
+        src/Utils/MathUtil.h
+        src/World/IWQueries.h
+        src/World/WQueries.cpp
+        src/World/WQueries.h
+        src/Sensors/ISensor.h)
 
 # Find OpenGL
 # Prefer modern GLVND over legacy libGL
