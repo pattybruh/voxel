@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package voxel;
+
+message Keystroke {
+  string key = 1; // python client's movement intent
+}
+
+message EnvResponse{
+  bool success = 1;
+}
+
+service SimulationInput{
+  rpc InputCommand(Keystroke) returns (EnvResponse) {}
+  rpc InputSequence(stream Keystroke) returns (EnvResponse) {}
+}

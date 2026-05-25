@@ -5,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <thread>
 #include "shader.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "World/Chunk.h"
@@ -13,6 +14,7 @@
 #include "stb_image.h"
 #include "Physics/Physics.h"
 #include "World/ChunkManager.h"
+#include "Physics/InputService.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -28,7 +30,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment to fix compilation on OS X
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment to fix compilation on OS X
 
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "voxel", NULL, NULL);
     if (window == NULL)
@@ -71,6 +73,9 @@ int main()
         constexpr double DT = 1.0/60.0;
         constexpr float PHEIGHT = 1.75f;
         constexpr float PLAYERMS = 8.0f;
+
+        std::thread server_thread(RunServer);
+
         while (!glfwWindowShouldClose(window))
         {
             double curr_frame_time = glfwGetTime();
@@ -91,7 +96,7 @@ int main()
 
             // input
             move_player_horizontal(window, camera, player, PLAYERMS);
-            try_jump(window, player);
+            //try_jump(window, player);
             processInput(window);
 
             while(acc >= DT) {
@@ -114,6 +119,11 @@ int main()
             // -------------------------------------------------------------------------------
             glfwSwapBuffers(window);
             glfwPollEvents();
+        }
+
+        CloseServer();
+        if(server_thread.joinable()) {
+            server_thread.join();
         }
     }
 

@@ -8,3 +8,5 @@ GLAD/
 glm/
 runvox.sh
 todo.txt
+generated/
+.DS_Store
