@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <random>
 
+constexpr unsigned int PERMUTATION_SIZE = 256;
+
 float NoiseGenerator::fade(float t) {
     return ((6*t - 15)*t + 10)*t*t*t;
 }
@@ -22,32 +24,32 @@ float NoiseGenerator::grad(int hash, float x, float y) {
     return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
 }
 
-NoiseGenerator::NoiseGenerator(float amp, float freq, unsigned int seed)
-    : m_permutation(512), m_amp(amp), m_freq(freq)
+NoiseGenerator::NoiseGenerator(TerrainSettings settings)
+    : m_permutation(PERMUTATION_SIZE * 2), m_settings(settings)
 {
     std::random_device rd;
-    std::mt19937 gen((seed==0) ? rd() : seed);
-    for(int i=0; i<256; i++) {
+    std::mt19937 gen((m_settings.seed==0) ? rd() : m_settings.seed);
+    for(int i=0; i<PERMUTATION_SIZE; i++) {
         m_permutation[i]=i;
     }
-    std::shuffle(m_permutation.begin(), m_permutation.begin()+256, gen);
-    for(int i=0; i<256; i++) {
-        m_permutation[i+256] = m_permutation[i];
+    std::shuffle(m_permutation.begin(), m_permutation.begin()+PERMUTATION_SIZE, gen);
+    for(int i=0; i<PERMUTATION_SIZE; i++) {
+        m_permutation[i+PERMUTATION_SIZE] = m_permutation[i];
     }
 }
 
 float NoiseGenerator::get_perlin(float x, float y, unsigned int octave) {
     float res = 0.0f;
-    float amp = m_amp;
+    float amp = 1.0f;
     float maxamp = 0.0f;
-    float freq = m_freq;
+    float freq = m_settings.frequency;
     for(unsigned int o=0; o<octave; o++) {
         res += amp*get_noise(x*freq, y*freq);
         maxamp += amp;
         amp *= 0.5f;
         freq *= 2.0f;
     }
-    return (res/maxamp + 1.0f)*0.5f;
+    return m_settings.amplitude * (res/maxamp);
 }
 
 float NoiseGenerator::get_noise(float x, float y) {

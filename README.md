@@ -35,6 +35,47 @@ A voxel based 3D simulation engine written in **C++** and **OpenGL**, designed t
 
 ---
 
+## Building and Running
+
+The project uses CMake to configure and build the C++ executable.
+
+Run these commands from the project root directory:
+
+```bash
+# Configure the project (needed the first time, or after changing the build configuration)
+cmake -S . -B build
+
+# Compile the project
+cmake --build build
+```
+
+The compiled executable is created at `build/Voxel`.
+
+To run the simulator:
+
+```bash
+./build/Voxel
+```
+
+The simulator starts a gRPC server on port `50051`. Keep the simulator running while starting the Python agent in a second terminal.
+
+The Python agent uses the Conda `base` environment, which contains the Python gRPC package. From the project root, run:
+
+```bash
+conda activate base
+python3 agents/test.py
+```
+
+The agent connects to the simulator at `localhost:50051`. It waits for commands typed into the terminal and sends them to the running simulator. For example, entering `w` sends a `w` command.
+
+If `conda activate base` is not recognized, initialize Conda for the Z shell and restart the terminal:
+
+```bash
+conda init zsh
+```
+
+---
+
 ## What’s Next
 
 Planned features to extend simulation and AI training capabilities:

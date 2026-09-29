@@ -59,7 +59,8 @@ int main()
 
     {
         Renderer renderer;
-        ChunkManager chunkman;
+        const TerrainSettings terrain_settings{16.0f, 0.01f, 42};    //{amp, freq, seed}
+        ChunkManager chunkman(terrain_settings);
         Physics physics;
         PBody player = {1, {0.5,36, 0.5}, {0,0,0}, {0.3,0.9,0.3}};
 

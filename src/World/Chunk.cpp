@@ -26,7 +26,7 @@ Chunk::Chunk(const glm::ivec3 &chunk_pos, NoiseGenerator &noisegen) {
             m_blocks[x][z] = new Block[CHUNK_SIZE];
             float worldx = static_cast<float>(chunk_pos.x*CHUNK_SIZE + x);
             float worldz = static_cast<float>(chunk_pos.z*CHUNK_SIZE + z);
-            float height = MAX_HEIGHT*noisegen.get_perlin(worldx, worldz, 4);
+            float height = BASE_HEIGHT + noisegen.get_perlin(worldx, worldz, 4);
             for(int y=0; y<CHUNK_SIZE; y++) {
                 if(static_cast<float>(chunk_pos.y*CHUNK_SIZE + y) > height) {
                     m_blocks[x][z][y].set_type(BlockType::Air);

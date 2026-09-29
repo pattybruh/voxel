@@ -15,7 +15,7 @@ inline int floor_mod(int a, int b) {
     return m;
 }
 
-ChunkManager::ChunkManager() : m_noisegen(6.0f, 0.01f){
+ChunkManager::ChunkManager(TerrainSettings settings) : m_noisegen(settings){
     for(int x = -WORLD_RADIUS; x < WORLD_RADIUS; x++) {
         for(int y = -WORLD_DEPTH; y < WORLD_DEPTH+3; y++) {
             for(int z = -WORLD_RADIUS; z < WORLD_RADIUS; z++) {

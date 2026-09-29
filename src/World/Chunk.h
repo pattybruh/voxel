@@ -32,7 +32,7 @@ private:
     std::vector<unsigned int> m_indices;
 public:
 	static constexpr int CHUNK_SIZE = 16;
-    static constexpr int MAX_HEIGHT = 32;
+    static constexpr int BASE_HEIGHT = 16;
 	Chunk();
     Chunk(const glm::ivec3& chunk_pos, NoiseGenerator& noisegen);
 	~Chunk();

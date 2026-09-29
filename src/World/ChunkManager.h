@@ -31,7 +31,7 @@ private:
     std::unordered_set<Chunk*> m_dirty_chunks;
 
 public:
-    ChunkManager();
+    explicit ChunkManager(TerrainSettings settings);
     void update_dirty_chunks();
     void render(Renderer& renderer, Shader& shader) const;
     void mark_dirty_chunk(Chunk* dchunk);
