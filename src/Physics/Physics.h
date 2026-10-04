@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 
 #include "../World/ChunkManager.h"
-#include "../Renderer/Camera.h"
+#include <GLFW/glfw3.h>
 
 enum class BodyType : int {
     Static, Dynamic
@@ -22,21 +22,29 @@ struct PBody {
     bool is_grounded = false;
 };
 
-inline glm::vec3 safe_normalize(const glm::vec3& v);
+struct InputAction{
+    float xDir;
+    float zDir;
+    int agentId;
+    bool jump;
+};
 
-void move_player_horizontal(GLFWwindow* window, const Camera& cam, PBody& body, float ms);
-
-void try_jump(GLFWwindow* window, PBody& body, float jumpSpeed=5.5f);
 
 class Physics {
 private:
+    std::vector<PBody> m_agents;
+
     bool sweep(ChunkManager& chunkman, PBody& body, float target, int axis);
     bool aabb_overlap(ChunkManager& chunkman, const glm::vec3& pos, const glm::vec3& half_ext);
 public:
     static constexpr float GRAVITY = 9.81f;
     static constexpr float EPSILON = 1e-5;
+
     Physics();
-    void step(ChunkManager& chunkman, PBody& body, float delta);
+    int add_agent(const glm::vec3& position);
+    void move_agent(const InputAction& action, float dt);
+    void step(ChunkManager& chunkman, float delta);
+    glm::vec3 get_pos(int agentId) const;
 };
 
 

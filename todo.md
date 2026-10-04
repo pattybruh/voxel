@@ -17,7 +17,6 @@ MVP: agent can reach a flag on generated terrain.
    Action: can be movement in 2 directions + jump.
    Observation: position, veloctiy, isGrounded, flag direction, sensor data
    Sensor: can be simple nearby height grid
-        camera, general sensor framework can be added later
 
 4. Expose gRPC Reset and Step.
    Reset(seed): creates an episode and returns its first observation
@@ -29,6 +28,9 @@ MVP: agent can reach a flag on generated terrain.
 
    Then train one agent and compare its success rate against a random policy on new seeds
 
-For reward, I’d begin with a reward for reaching the flag and a small cost per step. If the agent never finds the flag, you can experiment with a modest reward
-for getting closer. That is a design choice worth testing: a poorly chosen progress reward can teach the agent to exploit the reward instead of finishing the
-task.
+### After
+Actions/Observations factor in current facing direction
+    directional movements
+    sensor data
+
+Better sensors: camera, general sensor framework

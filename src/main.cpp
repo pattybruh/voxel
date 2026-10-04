@@ -8,36 +8,33 @@
 #include <thread>
 #include "shader.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include "World/Chunk.h"
 #include "Renderer/Camera.h"
 #include "Renderer/Renderer.h"
 #include "stb_image.h"
-#include "Physics/Physics.h"
-#include "World/ChunkManager.h"
 #include "Physics/InputService.h"
+#include "Simulation/Simulation.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
+InputAction processInput(GLFWwindow *window, int agentId);
 
 // settings
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+constexpr unsigned int SCR_WIDTH = 1920;
+constexpr unsigned int SCR_HEIGHT = 1080;
 
-int main()
-{
-    //glfw: init
+//glfw and window init
+bool windowSetup(GLFWwindow*& window){
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment to fix compilation on OS X
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "voxel", NULL, NULL);
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "voxel", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
-        return -1;
+        return false;
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -46,24 +43,32 @@ int main()
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
+        return false;
     }
     glEnable(GL_DEPTH_TEST);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+    return true;
+}
+
+int main()
+{
+    GLFWwindow* window;
+    if(!windowSetup(window)) {
+        return -1;
+    }
     //shader program
     Shader shader("shaders/vertex.glsl", "shaders/frag.glsl");
     shader.use();
     glm::mat4 projection = glm::perspective(glm::radians(65.0f), 16.f/9.0f, 0.1f, 1000.0f);
     shader.setMat4("proj", projection);
 
+    //PBody player = {1, {0.5,36, 0.5}, {0,0,0}, {0.3,0.9,0.3}};
     {
-        Renderer renderer;
         const TerrainSettings terrain_settings{16.0f, 0.01f, 42};    //{amp, freq, seed}
-        ChunkManager chunkman(terrain_settings);
-        Physics physics;
-        PBody player = {1, {0.5,36, 0.5}, {0,0,0}, {0.3,0.9,0.3}};
-
+        Simulation sim(terrain_settings);
+        int playerId = sim.add_agent({0, 36, 0});
+        Renderer renderer;
         Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));
 
         double prev_frame_time = glfwGetTime();
@@ -71,23 +76,13 @@ int main()
         glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
         double acc = 0.0;
-        constexpr double DT = 1.0/60.0;
         constexpr float PHEIGHT = 1.75f;
-        constexpr float PLAYERMS = 8.0f;
 
         std::thread server_thread(RunServer);
 
         while (!glfwWindowShouldClose(window))
         {
             double curr_frame_time = glfwGetTime();
-            /*
-            if ((int)(curr_frame_time*10) % 10 == 0) {
-                std::cout << "pos{" << player.position.x << ", " << player.position.y
-                          << ", " << player.position.z << "} onGround=" << player.is_grounded<< "\n";
-                std::cout << "vel{" << player.velocity.x << ", " << player.velocity.y
-                          << ", " << player.velocity.z << "}\n";
-            }
-            */
             double delta_time = curr_frame_time - prev_frame_time;
             delta_time = std::min(delta_time, 0.25);
             prev_frame_time = curr_frame_time;
@@ -95,25 +90,21 @@ int main()
             glfwGetCursorPos(window, &mouse_x, &mouse_y);
             camera.update(window, delta_time, mouse_x, mouse_y);
 
-            // input
-            move_player_horizontal(window, camera, player, PLAYERMS);
-            //try_jump(window, player);
-            processInput(window);
+            InputAction action = processInput(window, playerId);
 
-            while(acc >= DT) {
-                physics.step(chunkman, player, DT);
-                acc -= DT;
+            while(acc >= Simulation::DT) {
+                sim.step({action});
+                acc -= Simulation::DT;
             }
-            camera.set_position(player.position+glm::vec3{0, PHEIGHT, 0});
+            camera.set_position(sim.get_agent_pos(playerId)+glm::vec3{0, PHEIGHT, 0});
 
             // render
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
             shader.setMat4("view", camera.get_view_matrix());
 
-            chunkman.update_dirty_chunks();
-            chunkman.render(renderer, shader);
+            sim.getChunk().update_dirty_chunks();
+            sim.getChunk().render(renderer, shader);
 
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -134,12 +125,31 @@ int main()
     return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
+// Process all input, ESC to quit
+// TODO: move out when gRPC is implemented
+InputAction processInput(GLFWwindow *window, int agentId)
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    InputAction action{};
+    action.agentId = agentId;
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
         glfwSetWindowShouldClose(window, true);
+    }
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        action.xDir = 1.0f;
+    }
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        action.zDir = -1.0f;
+    }
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        action.xDir = -1.0f;
+    }
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        action.zDir = 1.0f;
+    }
+    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        action.jump = true;
+    }
+    return action;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

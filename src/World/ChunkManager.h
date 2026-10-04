@@ -24,7 +24,7 @@ struct GLMVec3Hash {
 
 class ChunkManager {
 private:
-    static constexpr int WORLD_RADIUS = 5;
+    static constexpr int WORLD_RADIUS = 6;
     static constexpr int WORLD_DEPTH = 1;
     NoiseGenerator m_noisegen;
     std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>, GLMVec3Hash> m_chunks;

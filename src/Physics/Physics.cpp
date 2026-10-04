@@ -5,58 +5,6 @@
 #include "Physics.h"
 #include "InputService.h"
 
-inline glm::vec3 safe_normalize(const glm::vec3& v) {
-    float l2 = glm::dot(v, v);
-    if (l2 > 1e-12f) return v / std::sqrt(l2);
-    return glm::vec3(0.0f);
-}
-
-void move_player_horizontal(GLFWwindow* window, const Camera& cam, PBody& body, float ms) {
-    glm::vec3 fwd = {cam.get_front().x, 0.0f, cam.get_front().z};
-    auto len2 = glm::dot(fwd, fwd);
-    if (len2 > 1e-12f) fwd /= std::sqrt(len2); else fwd = {0,0,1};
-    //fwd = safe_normalize(fwd);
-    glm::vec3 right = {-fwd.z, 0.0f, fwd.x};
-    glm::vec3 direction(0);
-    char input_key = '\0';
-    if(GetInput(input_key)) {
-        switch(input_key) {
-        case 'w':
-            direction += fwd;
-            break;
-        case 'a':
-            direction -= right;
-            break;
-        case 's':
-            direction -= fwd;
-            break;
-        case 'd':
-            direction += right;
-            break;
-        case ' ':
-            if(body.is_grounded) {
-                body.velocity.y = 5.0f;
-                body.is_grounded = false;
-            }
-            break;
-        default:
-            break;
-        }
-    }
-    if (glm::dot(direction, direction) > 0.0f) {
-        direction = safe_normalize(direction);
-        body.velocity.x = glm::clamp(body.velocity.x+direction.x, -ms, ms);
-        body.velocity.z = glm::clamp(body.velocity.z+direction.z, -ms, ms);
-    }
-}
-
-void try_jump(GLFWwindow* window, PBody& body, float jumpSpeed) {
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && body.is_grounded) {
-        body.velocity.y = jumpSpeed;
-        body.is_grounded = false;
-    }
-}
-
 bool Physics::sweep(ChunkManager &chunkman, PBody &body, float target, int axis) {
     float start = (&body.position.x)[axis];
     float ds = target-start;
@@ -110,17 +58,70 @@ bool Physics::aabb_overlap(ChunkManager &chunkman, const glm::vec3 &pos, const g
 Physics::Physics() {
 }
 
-void Physics::step(ChunkManager &chunkman, PBody &body, float delta) {
-    if(body.type != BodyType::Dynamic) return;
+int Physics::add_agent(const glm::vec3 &position) {
+    m_agents.emplace_back();
+    PBody& body = m_agents.back();
+    body.id = static_cast<int>(m_agents.size())-1;
+    body.position = position;
+    body.velocity = glm::vec3{0.0f};
+    body.h_extents = glm::vec3{0.3f, 0.9f, 0.3f};
+    body.type = BodyType::Dynamic;
+    body.is_grounded = false;
+    return body.id;
+}
 
-    body.velocity.y -= GRAVITY * delta;
-    glm::vec3 toward = body.position + (body.velocity*delta);
+void Physics::move_agent(const InputAction& action, float dt) {
+    PBody& body = m_agents[action.agentId];
+    constexpr float MAX_ACCELERATION = 25.0f; // blocks/s^2 from input
+    constexpr float MAX_SPEED = 10.0f;        // blocks/s from input
 
-    sweep(chunkman, body, toward.x, 0);
-    body.is_grounded = sweep(chunkman, body, toward.y, 1);
-    sweep(chunkman, body, toward.z, 2);
-    if(body.is_grounded){
-        body.velocity.x *= 0.8;
-        body.velocity.z *= 0.8;
+    glm::vec2 direction{1.0f, 1.0f};
+    direction.x *= action.xDir;
+    direction.y *= action.zDir;
+    if(action.jump && body.is_grounded) {
+        body.velocity.y = 5.0f;
+        body.is_grounded = false;
     }
+    float input_length = glm::length(direction);
+    if (input_length > 1.0f) {
+        direction /= input_length;
+    }
+
+    glm::vec2 velocity(body.velocity.x, body.velocity.z);
+    velocity += direction * MAX_ACCELERATION * dt;
+
+    float speed = glm::length(velocity);
+    if (speed > MAX_SPEED) {
+        velocity *= MAX_SPEED / speed;
+    }
+    body.velocity.x = velocity.x;
+    body.velocity.z = velocity.y;
+}
+
+void Physics::step(ChunkManager &chunkman, float delta) {
+    for(PBody& body : m_agents) {
+        if(body.type != BodyType::Dynamic) continue;
+
+        constexpr float GROUND_FRICTION = 16.0f;
+        if (body.is_grounded) {
+            glm::vec2 horizontal_velocity(body.velocity.x, body.velocity.z);
+            float speed = glm::length(horizontal_velocity);
+            if (speed > 0.0f) {
+                horizontal_velocity *= glm::max(0.0f, speed - GROUND_FRICTION * delta) / speed;
+                body.velocity.x = horizontal_velocity.x;
+                body.velocity.z = horizontal_velocity.y;
+            }
+        }
+
+        body.velocity.y -= GRAVITY * delta;
+        glm::vec3 toward = body.position + (body.velocity*delta);
+
+        sweep(chunkman, body, toward.x, 0);
+        body.is_grounded = sweep(chunkman, body, toward.y, 1);
+        sweep(chunkman, body, toward.z, 2);
+    }
+}
+
+glm::vec3 Physics::get_pos(int agentId) const {
+    return m_agents[agentId].position;
 }
