@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <optional>
 #include "../Renderer/Renderer.h"
 #include "NoiseGenerator.h"
 #include "shader.h"
@@ -26,6 +27,9 @@ class ChunkManager {
 private:
     static constexpr int WORLD_RADIUS = 6;
     static constexpr int WORLD_DEPTH = 1;
+    static constexpr int EXTRA_CHUNK_LAYERS_ABOVE = 3;
+    static constexpr int MIN_CHUNK_Y = -WORLD_DEPTH;
+    static constexpr int MAX_CHUNK_Y_EXCLUSIVE = WORLD_DEPTH + EXTRA_CHUNK_LAYERS_ABOVE;
     NoiseGenerator m_noisegen;
     std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>, GLMVec3Hash> m_chunks;
     std::unordered_set<Chunk*> m_dirty_chunks;
@@ -43,7 +47,9 @@ public:
     Chunk* get_chunk_containing(const glm::ivec3& w_pos);
     const Chunk* get_chunk_containing(const glm::ivec3& w_pos) const;
 
-    bool is_solid_w(const glm::ivec3& w_pos);
+    bool is_solid_w(const glm::ivec3& w_pos) const;
+
+    std::optional<int> surface_height(int world_x, int world_z) const;
 };
 
 

@@ -122,6 +122,6 @@ void Physics::step(ChunkManager &chunkman, float delta) {
     }
 }
 
-glm::vec3 Physics::get_pos(int agentId) const {
-    return m_agents[agentId].position;
+const PBody& Physics::get_agent(int agentId) const {
+   return m_agents[agentId];
 }

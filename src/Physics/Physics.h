@@ -44,7 +44,7 @@ public:
     int add_agent(const glm::vec3& position);
     void move_agent(const InputAction& action, float dt);
     void step(ChunkManager& chunkman, float delta);
-    glm::vec3 get_pos(int agentId) const;
+    const PBody& get_agent(int agentId) const;
 };
 
 

@@ -17,7 +17,7 @@ inline int floor_mod(int a, int b) {
 
 ChunkManager::ChunkManager(TerrainSettings settings) : m_noisegen(settings){
     for(int x = -WORLD_RADIUS; x < WORLD_RADIUS; x++) {
-        for(int y = -WORLD_DEPTH; y < WORLD_DEPTH+3; y++) {
+        for(int y = MIN_CHUNK_Y; y < MAX_CHUNK_Y_EXCLUSIVE; y++) {
             for(int z = -WORLD_RADIUS; z < WORLD_RADIUS; z++) {
                 m_chunks.emplace(glm::ivec3{x,y,z}, std::make_unique<Chunk>(glm::ivec3{x,y,z}, m_noisegen));
             }
@@ -75,7 +75,7 @@ const Chunk * ChunkManager::get_chunk_containing(const glm::ivec3 &w_pos) const 
     });
 }
 
-bool ChunkManager::is_solid_w(const glm::ivec3 &w_pos) {
+bool ChunkManager::is_solid_w(const glm::ivec3 &w_pos) const {
     const Chunk* chunk = get_chunk_containing(w_pos);
     if(!chunk) return false;
 
@@ -112,4 +112,16 @@ void ChunkManager::set_block(const glm::ivec3& world_coord, BlockType type) {
     else if(block_coord.z == Chunk::CHUNK_SIZE-1) {
         mark_dirty_chunk(get_chunk(glm::ivec3{world_coord.x, world_coord.y, world_coord.z+1}));
     }
+}
+
+std::optional<int> ChunkManager::surface_height(int world_x, int world_z) const {
+    constexpr int min_block_y = MIN_CHUNK_Y * Chunk::CHUNK_SIZE;
+    constexpr int max_block_y = MAX_CHUNK_Y_EXCLUSIVE * Chunk::CHUNK_SIZE - 1;
+    for(int y = max_block_y; y >= min_block_y; y--) {
+        const glm::ivec3 w_pos{world_x, y, world_z};
+        if(is_solid_w(w_pos)) {
+            return y+1;
+        }
+    }
+    return std::nullopt;
 }
