@@ -13,7 +13,6 @@
 #include "Renderer/Camera.h"
 #include "Renderer/Renderer.h"
 #include "stb_image.h"
-#include "Physics/InputService.h"
 #include "Simulation/Simulation.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -35,7 +34,7 @@ void printHeightmap(const StepResult& result) {
     const auto& reading = observation.heightmap;
     for (int x = Heightmap::SIZE-1; x >= 0; --x) {
         for (int z = 0; z < Heightmap::SIZE; ++z) {
-            if (reading.valid[x][z]) {
+            if (reading.valids[x][z]) {
                 output << std::setw(9) << reading.heights[x][z];
             } else {
                 output << std::setw(9) << "--";
@@ -96,7 +95,7 @@ int main()
     {
         const TerrainSettings terrain_settings{16.0f, 0.01f, 42};    //{amp, freq, seed}
         Simulation sim(terrain_settings);
-        int playerId = sim.add_agent({0, 36, 0});
+        int playerId = sim.add_agent({0, 0});
         Renderer renderer;
         Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));
 
@@ -108,7 +107,7 @@ int main()
         constexpr float PHEIGHT = 1.75f;
         bool observation_key_was_down = false;
 
-        std::thread server_thread(RunServer);
+        //std::thread server_thread(RunServer);
 
         while (!glfwWindowShouldClose(window))
         {
@@ -150,10 +149,12 @@ int main()
             glfwPollEvents();
         }
 
+        /*
         CloseServer();
         if(server_thread.joinable()) {
             server_thread.join();
         }
+        */
     }
 
     // glfw: terminate, clearing all previously allocated GLFW resources.

@@ -58,6 +58,10 @@ bool Physics::aabb_overlap(ChunkManager &chunkman, const glm::vec3 &pos, const g
 Physics::Physics() {
 }
 
+void Physics::reset() {
+    m_agents.clear();
+}
+
 int Physics::add_agent(const glm::vec3 &position) {
     m_agents.emplace_back();
     PBody& body = m_agents.back();

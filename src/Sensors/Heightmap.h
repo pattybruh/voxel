@@ -5,7 +5,7 @@
 
 struct HeightmapReading{
     std::vector<std::vector<float>> heights;
-    std::vector<std::vector<bool>> valid;
+    std::vector<std::vector<bool>> valids;
 };
 
 class Heightmap {

@@ -41,6 +41,7 @@ public:
     static constexpr float EPSILON = 1e-5;
 
     Physics();
+    void reset();
     int add_agent(const glm::vec3& position);
     void move_agent(const InputAction& action, float dt);
     void step(ChunkManager& chunkman, float delta);

@@ -2,6 +2,7 @@
 // Created by Patrick Li
 //
 #include "InputService.h"
+/*
 #include <grpc/grpc.h>
 #include <grpcpp/security/server_credentials.h>
 #include <grpcpp/server.h>
@@ -78,3 +79,4 @@ bool GetInput(char& command) {
 	}
 	return false;
 }
+    */
