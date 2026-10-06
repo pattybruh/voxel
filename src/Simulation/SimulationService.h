@@ -16,9 +16,17 @@ private:
         uint32_t seed;
     };
 
+    enum class CmdStatus{
+        QUEUED,
+        EXECUTING,
+        FINISHED,
+        CANCELLED,
+    };
+
     struct PendingCommand{
         std::variant<ResetCommand, InputAction> command;
         std::promise<StepResult> promise;
+        CmdStatus status = CmdStatus::QUEUED;
     };
 
     std::mutex m_queue_mutex;

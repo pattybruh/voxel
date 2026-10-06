@@ -25,7 +25,6 @@ int Simulation::add_agent(glm::vec2 position) {
     return id;
 }
 
-// TODO: make sure 'actions' is sanitized on creation from gRPC input
 void Simulation::step(const std::vector<InputAction>& actions) {
     static_assert(STEPS_PER_ACTION > 0, "STEPS_PER_ACTION must be positive");
     for(int i = 0; i < STEPS_PER_ACTION; i++) {
