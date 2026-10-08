@@ -2,8 +2,8 @@
 #include <chrono>
 #include <cmath>
 #include <exception>
-#include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace {
 
@@ -42,7 +42,10 @@ grpc::Status SimulationServiceImpl::Reset(
     auto future = pending->promise.get_future();
     {
         std::lock_guard<std::mutex> lock(m_queue_mutex);
-        m_commands.push(pending);
+        if(m_queue_closed){
+            return grpc::Status(grpc::StatusCode::UNAVAILABLE, "Server shutting down");
+        }
+        m_cmd_queue.push(pending);
     }
     try {
         while(future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready){
@@ -57,7 +60,11 @@ grpc::Status SimulationServiceImpl::Reset(
         if (context->IsCancelled()) {
             return grpc::Status(grpc::StatusCode::CANCELLED, "Request cancelled");
         }
-        convertObservation(future.get().observation, response->mutable_obs());
+        CommandResult result = future.get();
+        if(const auto* status = std::get_if<grpc::Status>(&result)){
+            return *status;
+        }
+        convertObservation(std::get<StepResult>(result).observation, response->mutable_obs());
         return grpc::Status::OK;
     } catch (const std::exception& error) {
         return grpc::Status(grpc::StatusCode::INTERNAL, std::string("Reset failed: ") + error.what());
@@ -96,7 +103,10 @@ grpc::Status SimulationServiceImpl::Step(
     auto future = pending->promise.get_future();
     {
         std::lock_guard<std::mutex> lock(m_queue_mutex);
-        m_commands.push(pending);
+        if (m_queue_closed) {
+            return grpc::Status(grpc::StatusCode::UNAVAILABLE, "Server shutting down");
+        }
+        m_cmd_queue.push(pending);
     }
     try {
         while(future.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready){
@@ -111,7 +121,11 @@ grpc::Status SimulationServiceImpl::Step(
         if (context->IsCancelled()) {
             return grpc::Status(grpc::StatusCode::CANCELLED, "Request cancelled");
         }
-        StepResult res = future.get();
+        CommandResult result = future.get();
+        if(const auto* status = std::get_if<grpc::Status>(&result)){
+            return *status;
+        }
+        const StepResult& res = std::get<StepResult>(result);
         convertObservation(res.observation, response->mutable_obs());
         response->set_reward(res.reward);
         response->set_terminated(res.terminated);
@@ -127,11 +141,11 @@ grpc::Status SimulationServiceImpl::Step(
 
 void SimulationServiceImpl::processPendingCmds(Simulation& simulation){
     std::unique_lock<std::mutex> lock(m_queue_mutex);
-    if(m_commands.empty()){
+    if(m_cmd_queue.empty()){
         return;
     }
-    std::shared_ptr<PendingCommand> cmd = m_commands.front();
-    m_commands.pop();
+    std::shared_ptr<PendingCommand> cmd = m_cmd_queue.front();
+    m_cmd_queue.pop();
     const bool cancelled = cmd->status == CmdStatus::CANCELLED;
     if(!cancelled){
         cmd->status = CmdStatus::EXECUTING;
@@ -140,7 +154,7 @@ void SimulationServiceImpl::processPendingCmds(Simulation& simulation){
     lock.unlock();
 
     if(cancelled){
-        cmd->promise.set_exception(std::make_exception_ptr(std::runtime_error("Command cancelled")));
+        cmd->promise.set_value(grpc::Status(grpc::StatusCode::CANCELLED, "Request cancelled"));
         return;
     }
     StepResult result;
@@ -167,4 +181,18 @@ void SimulationServiceImpl::processPendingCmds(Simulation& simulation){
         cmd->status = CmdStatus::FINISHED;
     }
     cmd->promise.set_value(std::move(result));
+}
+
+void SimulationServiceImpl::closeQueue(){
+    std::lock_guard<std::mutex> lock(m_queue_mutex);
+    if(m_queue_closed){
+        return;
+    }
+    m_queue_closed = true;
+    while(!m_cmd_queue.empty()){
+        auto cmd = m_cmd_queue.front();
+        m_cmd_queue.pop();
+        cmd->status = CmdStatus::CANCELLED;
+        cmd->promise.set_value(grpc::Status(grpc::StatusCode::UNAVAILABLE, "Server shutting down"));
+    }
 }

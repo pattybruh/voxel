@@ -14,6 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_DIR})
 
 # Collect source files (don't include .h files here)
 file(GLOB_RECURSE SOURCE_FILES ${SRC_DIR}/*.cpp ${SRC_DIR}/*.c)
+list(REMOVE_ITEM SOURCE_FILES "${SRC_DIR}/Physics/InputService.cpp")
 
 # Include directories for headers
 include_directories(GLAD/include)
@@ -31,9 +32,7 @@ set(GLAD_SRC GLAD/src/glad.c
         src/World/NoiseGenerator.cpp
         src/World/NoiseGenerator.h
         src/Physics/Physics.cpp
-        src/Physics/Physics.h
-        src/Physics/InputService.cpp
-        src/Physics/InputService.h)
+        src/Physics/Physics.h)
 
 # Find OpenGL
 # Prefer modern GLVND over legacy libGL
@@ -105,4 +104,3 @@ add_custom_target(copy_shaders ALL
         DEPENDS ${SHADERS}
 )
 add_dependencies(Voxel copy_shaders)
-

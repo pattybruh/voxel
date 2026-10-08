@@ -4,6 +4,7 @@
 #include "simulation.grpc.pb.h"
 #include "Simulation.h"
 
+#include <cstdint>
 #include <future>
 #include <memory>
 #include <mutex>
@@ -23,14 +24,17 @@ private:
         CANCELLED,
     };
 
+    using CommandResult = std::variant<StepResult, grpc::Status>;
+
     struct PendingCommand{
         std::variant<ResetCommand, InputAction> command;
-        std::promise<StepResult> promise;
+        std::promise<CommandResult> promise;
         CmdStatus status = CmdStatus::QUEUED;
     };
 
     std::mutex m_queue_mutex;
-    std::queue<std::shared_ptr<PendingCommand>> m_commands;
+    std::queue<std::shared_ptr<PendingCommand>> m_cmd_queue;
+    bool m_queue_closed = false;
 
 public:
     grpc::Status Reset(
@@ -46,6 +50,7 @@ public:
     ) override;
 
     void processPendingCmds(Simulation& simulation);
+    void closeQueue();
 };
 
 #endif //SIMULATION_SERVICE_H

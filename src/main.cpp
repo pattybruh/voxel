@@ -4,19 +4,19 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <thread>
 #include "shader.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "Renderer/Camera.h"
 #include "Renderer/Renderer.h"
 #include "stb_image.h"
 #include "Simulation/Simulation.h"
+#include "Simulation/SimulationServer.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-InputAction processInput(GLFWwindow *window, int agentId);
 
 void printHeightmap(const StepResult& result) {
     const Observation& observation = result.observation;
@@ -96,6 +96,7 @@ int main()
         const TerrainSettings terrain_settings{16.0f, 0.01f, 42};    //{amp, freq, seed}
         Simulation sim(terrain_settings);
         int playerId = sim.add_agent({0, 0});
+        SimulationServer server("0.0.0.0:50051");
         Renderer renderer;
         Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));
 
@@ -103,28 +104,24 @@ int main()
         double mouse_x, mouse_y;
         glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
-        double acc = 0.0;
         constexpr float PHEIGHT = 1.75f;
         bool observation_key_was_down = false;
 
-        //std::thread server_thread(RunServer);
-
         while (!glfwWindowShouldClose(window))
         {
+            if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+                glfwSetWindowShouldClose(window, true);
+                break;
+            }
+
             double curr_frame_time = glfwGetTime();
             double delta_time = curr_frame_time - prev_frame_time;
             delta_time = std::min(delta_time, 0.25);
             prev_frame_time = curr_frame_time;
-            acc += delta_time;
             glfwGetCursorPos(window, &mouse_x, &mouse_y);
             camera.update(window, delta_time, mouse_x, mouse_y);
 
-            InputAction action = processInput(window, playerId);
-
-            while(acc >= Simulation::ACTION_DT) {
-                sim.step({action});
-                acc -= Simulation::ACTION_DT;
-            }
+            server.processPendingCmds(sim);
 
             const bool observation_key_down = glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS;
             if (observation_key_down && !observation_key_was_down) {
@@ -149,45 +146,12 @@ int main()
             glfwPollEvents();
         }
 
-        /*
-        CloseServer();
-        if(server_thread.joinable()) {
-            server_thread.join();
-        }
-        */
     }
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
-}
-
-// Process all input, ESC to quit
-// TODO: move out when gRPC is implemented
-InputAction processInput(GLFWwindow *window, int agentId)
-{
-    InputAction action{};
-    action.agentId = agentId;
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
-        glfwSetWindowShouldClose(window, true);
-    }
-    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        action.xDir = 1.0f;
-    }
-    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        action.zDir = -1.0f;
-    }
-    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        action.xDir = -1.0f;
-    }
-    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        action.zDir = 1.0f;
-    }
-    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        action.jump = true;
-    }
-    return action;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

@@ -3,7 +3,6 @@
 //
 
 #include "Physics.h"
-#include "InputService.h"
 
 bool Physics::sweep(ChunkManager &chunkman, PBody &body, float target, int axis) {
     float start = (&body.position.x)[axis];
