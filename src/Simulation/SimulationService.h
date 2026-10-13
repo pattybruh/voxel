@@ -13,10 +13,6 @@
 
 class SimulationServiceImpl final : public voxel::SimulationService::Service {
 private:
-    struct ResetCommand{
-        uint32_t seed;
-    };
-
     enum class CmdStatus{
         QUEUED,
         EXECUTING,
@@ -24,10 +20,24 @@ private:
         CANCELLED,
     };
 
-    using CommandResult = std::variant<StepResult, grpc::Status>;
+    struct ResetCommand{
+        uint32_t id;
+        uint32_t seed;
+    };
+
+    struct RegisterAgentCommand{
+        glm::vec2 position;
+    };
+
+    struct RegisteredAgent{
+        uint32_t id;
+    };
+
+    using Command = std::variant<ResetCommand, RegisterAgentCommand, InputAction>;
+    using CommandResult = std::variant<StepResult, RegisteredAgent, grpc::Status>;
 
     struct PendingCommand{
-        std::variant<ResetCommand, InputAction> command;
+        Command command;
         std::promise<CommandResult> promise;
         CmdStatus status = CmdStatus::QUEUED;
     };
@@ -47,6 +57,12 @@ public:
         grpc::ServerContext* context,
         const voxel::StepRequest* request,
         voxel::StepResponse* response
+    ) override;
+
+    grpc::Status RegisterAgent(
+        grpc::ServerContext* context,
+        const voxel::Vec3* request,
+        voxel::RegistrationResponse* response
     ) override;
 
     void processPendingCmds(Simulation& simulation);

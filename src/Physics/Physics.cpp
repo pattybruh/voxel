@@ -57,10 +57,6 @@ bool Physics::aabb_overlap(ChunkManager &chunkman, const glm::vec3 &pos, const g
 Physics::Physics() {
 }
 
-void Physics::reset() {
-    m_agents.clear();
-}
-
 int Physics::add_agent(const glm::vec3 &position) {
     m_agents.emplace_back();
     PBody& body = m_agents.back();
@@ -71,6 +67,13 @@ int Physics::add_agent(const glm::vec3 &position) {
     body.type = BodyType::Dynamic;
     body.is_grounded = false;
     return body.id;
+}
+
+void Physics::reset_agent(int agentId, const glm::vec3& position) {
+    PBody& body = m_agents[agentId];
+    body.position = position;
+    body.velocity = glm::vec3{0.0f};
+    body.is_grounded = false;
 }
 
 void Physics::move_agent(const InputAction& action, float dt) {

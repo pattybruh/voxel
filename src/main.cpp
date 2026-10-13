@@ -95,7 +95,6 @@ int main()
     {
         const TerrainSettings terrain_settings{16.0f, 0.01f, 42};    //{amp, freq, seed}
         Simulation sim(terrain_settings);
-        int playerId = sim.add_agent({0, 0});
         SimulationServer server("0.0.0.0:50051");
         Renderer renderer;
         Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));
@@ -122,14 +121,17 @@ int main()
             camera.update(window, delta_time, mouse_x, mouse_y);
 
             server.processPendingCmds(sim);
+            const auto playerId = sim.sole_agent_id();
 
             const bool observation_key_down = glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS;
-            if (observation_key_down && !observation_key_was_down) {
-                printHeightmap(sim.observe(playerId));
+            if (playerId && observation_key_down && !observation_key_was_down) {
+                printHeightmap(sim.observe(*playerId));
             }
             observation_key_was_down = observation_key_down;
 
-            camera.set_position(sim.get_agent(playerId).position+glm::vec3{0, PHEIGHT, 0});
+            if (playerId) {
+                camera.set_position(sim.get_agent(*playerId).position+glm::vec3{0, PHEIGHT, 0});
+            }
 
             // render
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

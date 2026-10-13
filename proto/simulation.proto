@@ -22,7 +22,8 @@ message Observation{
 }
 
 message ResetRequest{
-    uint32 seed = 1;
+    uint32 id = 1;
+    uint32 seed = 2;
 }
 
 message ResetResponse{
@@ -32,7 +33,8 @@ message ResetResponse{
 message StepRequest{
     float dir_x = 1;
     float dir_z = 2;
-    bool jump = 3;
+    uint32 id = 3;
+    bool jump = 4;
 }
 
 message StepResponse{
@@ -42,7 +44,12 @@ message StepResponse{
     bool truncated = 4;
 }
 
+message RegistrationResponse{
+    uint32 id = 1;
+}
+
 service SimulationService {
+    rpc RegisterAgent(Vec3) returns (RegistrationResponse);
     rpc Reset(ResetRequest) returns (ResetResponse);
     rpc Step(StepRequest) returns (StepResponse);
 }

@@ -34,3 +34,4 @@ Actions/Observations factor in current facing direction
     sensor data
 
 Better sensors: camera, general sensor framework
+Multiple agents

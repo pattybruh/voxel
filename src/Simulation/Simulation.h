@@ -4,7 +4,9 @@
 #include "../World/ChunkManager.h"
 #include "../Physics/Physics.h"
 #include "../Sensors/Heightmap.h"
+#include <cstdint>
 #include <memory>
+#include <optional>
 
 struct Observation {
     HeightmapReading heightmap;
@@ -35,9 +37,12 @@ public:
     Simulation(const TerrainSettings& settings);
     Simulation();
     ChunkManager& getChunk();
-    int add_agent(glm::vec2 position);  //return agentId for future use
+    int add_agent(glm::vec2 position);
+    bool has_agent(uint32_t agentId) const;
+    int agent_cnt() const;
+    std::optional<int> sole_agent_id() const;
     void step(const std::vector<InputAction>& actions);
-    void reset(unsigned int seed);
+    bool reset(unsigned int seed);
     const PBody& get_agent(int agentId) const;
     StepResult observe(int agentId) const;
 };
