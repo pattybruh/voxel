@@ -25,7 +25,6 @@ struct GLMVec3Hash {
 
 class ChunkManager {
 private:
-    static constexpr int WORLD_RADIUS = 6;
     static constexpr int WORLD_DEPTH = 1;
     static constexpr int EXTRA_CHUNK_LAYERS_ABOVE = 3;
     static constexpr int MIN_CHUNK_Y = -WORLD_DEPTH;
@@ -35,6 +34,7 @@ private:
     std::unordered_set<Chunk*> m_dirty_chunks;
 
 public:
+    static constexpr int WORLD_RADIUS = 6;
     explicit ChunkManager(TerrainSettings settings);
     void update_dirty_chunks();
     void render(Renderer& renderer, Shader& shader) const;

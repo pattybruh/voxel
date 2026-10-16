@@ -244,8 +244,14 @@ void SimulationServiceImpl::processPendingCmds(Simulation& simulation){
                 result.emplace(grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, "Unknown agent id"));
             }
             else {
-                simulation.step({action});
-                result.emplace(simulation.observe(action.agentId));
+                auto res = simulation.step(action);
+                if(!res){
+                    result.emplace(grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
+                        "Episode ended, call Reset()."));
+                }
+                else{
+                    result.emplace(std::move(*res));
+                }
             }
         }
     } catch (...) {

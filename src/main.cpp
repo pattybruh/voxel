@@ -11,6 +11,7 @@
 #include "shader.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "Renderer/Camera.h"
+#include "Renderer/FlagRenderer.h"
 #include "Renderer/Renderer.h"
 #include "stb_image.h"
 #include "Simulation/Simulation.h"
@@ -94,9 +95,10 @@ int main()
     //PBody player = {1, {0.5,36, 0.5}, {0,0,0}, {0.3,0.9,0.3}};
     {
         const TerrainSettings terrain_settings{16.0f, 0.01f, 42};    //{amp, freq, seed}
-        Simulation sim(terrain_settings);
+        Simulation sim(terrain_settings, glm::vec2{40, 20});
         SimulationServer server("0.0.0.0:50051");
         Renderer renderer;
+        FlagRenderer flag_renderer;
         Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));
 
         double prev_frame_time = glfwGetTime();
@@ -140,6 +142,7 @@ int main()
 
             sim.getChunk().update_dirty_chunks();
             sim.getChunk().render(renderer, shader);
+            flag_renderer.draw(renderer, shader, sim.flag_position());
 
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
