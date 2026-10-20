@@ -13,6 +13,7 @@ struct Observation {
     glm::vec3 position;
     glm::vec3 velocity;
     bool is_grounded = false;
+    glm::vec3 goal_position;
 };
 
 struct StepResult {

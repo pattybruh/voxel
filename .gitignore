@@ -9,4 +9,5 @@ glm/
 runvox.sh
 todo.txt
 generated/
+.venv/
 .DS_Store

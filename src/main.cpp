@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <string>
 #include "shader.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "Renderer/Camera.h"
@@ -80,8 +81,29 @@ bool windowSetup(GLFWwindow*& window){
     return true;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    std::string listen_address = "0.0.0.0:50051";
+    for(int i = 1; i < argc; ++i){
+        const std::string arg = argv[i];
+        if(arg == "--help" || arg == "-h") {
+            std::cout << "Usage: " << argv[0] << " [--listen ADDRESS]\n"
+                      << "  --listen ADDRESS  gRPC server address (default: 0.0.0.0:50051)\n";
+            return 0;
+        }
+        if(arg == "--listen"){
+            if(i + 1 >= argc || std::string(argv[i + 1]).empty() || argv[i + 1][0] == '-'){
+                std::cerr << "--listen requires an address, for example localhost:50052\n";
+                return 1;
+            }
+            listen_address = argv[++i];
+        }
+        else{
+            std::cerr << "Unknown argument: " << arg << ". Use --help for usage.\n";
+            return 1;
+        }
+    }
+
     GLFWwindow* window;
     if(!windowSetup(window)) {
         return -1;
@@ -96,7 +118,7 @@ int main()
     {
         const TerrainSettings terrain_settings{16.0f, 0.01f, 42};    //{amp, freq, seed}
         Simulation sim(terrain_settings, glm::vec2{40, 20});
-        SimulationServer server("0.0.0.0:50051");
+        SimulationServer server(listen_address);
         Renderer renderer;
         FlagRenderer flag_renderer;
         Camera camera(glm::vec3(20.0f, 20.0f, 20.0f));

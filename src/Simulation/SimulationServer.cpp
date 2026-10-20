@@ -1,4 +1,5 @@
 #include "SimulationServer.h"
+#include <iostream>
 #include <stdexcept>
 #include <grpcpp/security/server_credentials.h>
 #include <grpcpp/server_builder.h>
@@ -9,8 +10,9 @@ SimulationServer::SimulationServer(const std::string& addr){
 	builder.RegisterService(&m_service);
 	m_server = builder.BuildAndStart();
     if(!m_server){
-        throw std::runtime_error("Failed to start simulation server");
+        throw std::runtime_error("Failed to start simulation server at " + addr);
     }
+    std::cout << "Simulation gRPC server listening on " << addr << std::endl;
 }
 
 SimulationServer::~SimulationServer(){

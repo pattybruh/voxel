@@ -155,7 +155,8 @@ StepResult Simulation::observe(int agentId) const {
             sensor.sense(*m_chunkman, agent.position),
             agent.position,
             agent.velocity,
-            agent.is_grounded
+            agent.is_grounded,
+            m_flag_pos
         },
         0.0f,      // Observing alone does not earn a reward.
         false,  // TODO

@@ -19,6 +19,9 @@ message Observation{
     Vec3 position = 5;
     Vec3 velocity = 6;
     bool is_grounded = 7;
+
+    // Current flag position in world coordinates, including terrain-dependent y.
+    Vec3 goal_position = 8;
 }
 
 message ResetRequest{

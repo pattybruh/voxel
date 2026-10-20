@@ -25,6 +25,9 @@ void convertObservation(const Observation& src, voxel::Observation* dst){
     dst->mutable_velocity()->set_y(src.velocity.y);
     dst->mutable_velocity()->set_z(src.velocity.z);
     dst->set_is_grounded(src.is_grounded);
+    dst->mutable_goal_position()->set_x(src.goal_position.x);
+    dst->mutable_goal_position()->set_y(src.goal_position.y);
+    dst->mutable_goal_position()->set_z(src.goal_position.z);
 }
 
 } // namespace
