@@ -9,5 +9,7 @@ glm/
 runvox.sh
 todo.txt
 generated/
+agents/voxel/_generated/
+__pycache__/
 .venv/
 .DS_Store
